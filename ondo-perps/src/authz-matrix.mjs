@@ -25,6 +25,14 @@ const credentials = [
   ...(API_KEY_ID && API_KEY_SECRET
     ? [{ name: 'api-key', headers: apiKeyHeaders(API_KEY_ID, API_KEY_SECRET) }]
     : []),
+  ...(API_KEY_ID ? [{ name: 'api-id-without-secret', headers: { 'X-API-KEY-ID': API_KEY_ID } }] : []),
+  ...(API_KEY_SECRET ? [{ name: 'api-secret-without-id', headers: bearer(API_KEY_SECRET) }] : []),
+  ...(JWT && API_KEY_ID
+    ? [{ name: 'jwt-plus-api-id', headers: { ...bearer(JWT), 'X-API-KEY-ID': API_KEY_ID } }]
+    : []),
+  ...(JWT
+    ? [{ name: 'jwt-plus-random-api-id', headers: { ...bearer(JWT), 'X-API-KEY-ID': randomUUID() } }]
+    : []),
 ]
 
 const reads = [
@@ -145,12 +153,19 @@ async function main() {
   }
 
   const acceptedInvalidWrites = evidence.invalidWrites.filter((x) => x.classification === 'accepted')
+  const mixedCredentialReads = evidence.reads.filter((x) => x.credential.includes('plus-'))
   evidence.review = {
     acceptedInvalidWriteCount: acceptedInvalidWrites.length,
     acceptedInvalidWrites: acceptedInvalidWrites.map((x) => ({ credential: x.credential, probe: x.probe })),
+    mixedCredentialReads: mixedCredentialReads.map((x) => ({
+      credential: x.credential,
+      probe: x.probe,
+      classification: x.classification,
+    })),
     interpretation: [
       'Anonymous private reads/writes must reject before business validation.',
       'API keys should expose only endpoints allowed by their scopes.',
+      'Ambiguous JWT + API-key-ID requests should reject rather than silently selecting the more privileged credential.',
       'A 2xx for an intentionally invalid write is a manual-review signal, not automatically a vulnerability.',
     ],
   }
