@@ -1,12 +1,23 @@
 {
   "name": "ondo-perps-authorized-lab",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "recon": "node src/recon.mjs"
+    "recon": "node src/recon.mjs",
+    "siwe": "node src/siwe-lab.mjs",
+    "authz": "node src/authz-matrix.mjs",
+    "ws": "node src/ws-lab.mjs",
+    "invariants": "node src/invariant-lab.mjs",
+    "race": "node src/order-race-lab.mjs"
   },
   "engines": {
     "node": ">=20"
+  },
+  "dependencies": {
+    "big.js": "^7.0.1",
+    "jose": "^6.1.0",
+    "viem": "^2.48.8",
+    "ws": "^8.18.3"
   }
 }
