@@ -1,0 +1,12 @@
+{
+  "name": "ondo-perps-authorized-lab",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "recon": "node src/recon.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
