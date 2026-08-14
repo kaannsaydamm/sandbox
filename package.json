@@ -6,6 +6,6 @@
     "node": ">=20"
   },
   "dependencies": {
-    "@travisvn/edge-tts": "1.0.3"
+    "@travisvn/edge-tts": "1.0.2"
   }
 }
