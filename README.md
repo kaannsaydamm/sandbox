@@ -13,3 +13,7 @@ Isolated workspace for authorized bug-bounty research and reproducible local tes
 ## Current target
 
 - `ondo-perps/` — Ondo Perps authorized research harness.
+
+## Temporary render transport
+
+- [ALUCLU neural voice pack](https://tmpfiles.org/dl/w6w6SecClNjB/aluclu_neural_voicepack.bin)
