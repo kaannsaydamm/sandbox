@@ -8,7 +8,7 @@ let PACK_PROMISE = null;
 
 function compactOpus(input) {
   return new Promise((resolve, reject) => {
-    const ff = spawn(ffmpegPath, ['-hide_banner','-loglevel','error','-i','pipe:0','-vn','-ac','1','-ar','24000','-c:a','libopus','-b:a','16k','-vbr','on','-compression_level','10','-f','ogg','pipe:1']);
+    const ff = spawn(ffmpegPath, ['-hide_banner','-loglevel','error','-i','pipe:0','-vn','-ac','1','-ar','24000','-c:a','libopus','-b:a','8k','-vbr','on','-application','voip','-compression_level','10','-f','ogg','pipe:1']);
     const out=[]; const err=[];
     ff.stdout.on('data',d=>out.push(d)); ff.stderr.on('data',d=>err.push(d)); ff.on('error',reject);
     ff.on('close',c=>c===0?resolve(Buffer.concat(out)):reject(new Error(Buffer.concat(err).toString()||`ffmpeg ${c}`)));
@@ -32,7 +32,7 @@ async function buildPack() {
     entries.push({id:seg.id,start:seg.start,max:seg.max,speaker:seg.speaker,offset,length:audio.length});
     chunks.push(audio); offset += audio.length;
   }
-  const header=Buffer.from(JSON.stringify({version:1,codec:'ogg/opus',entries}),'utf8');
+  const header=Buffer.from(JSON.stringify({version:1,codec:'ogg/opus',bitrate:'8k',entries}),'utf8');
   const prefix=Buffer.alloc(4); prefix.writeUInt32BE(header.length,0);
   return Buffer.concat([prefix,header,...chunks]);
 }
@@ -42,14 +42,12 @@ export default async function handler(req,res){
     if (!PACK_PROMISE) PACK_PROMISE=buildPack().catch(e=>{PACK_PROMISE=null;throw e;});
     const pack=await PACK_PROMISE;
     res.setHeader('Cache-Control','public, s-maxage=3600, stale-while-revalidate=86400');
-
     if(String(req.query.binary??'')==='1') {
       res.setHeader('Content-Type','application/octet-stream');
       res.setHeader('Content-Disposition','attachment; filename="aluclu_neural_voicepack.bin"');
       res.setHeader('Content-Length',String(pack.length));
       return res.status(200).send(pack);
     }
-
     const b64=pack.toString('base64');
     const chunkSize=Math.max(20000,Math.min(160000,Number(req.query.chunk_size)||160000));
     const count=Math.ceil(b64.length/chunkSize);
