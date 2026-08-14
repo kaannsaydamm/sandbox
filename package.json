@@ -3,9 +3,9 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=20"
+    "node": "22.x"
   },
   "dependencies": {
-    "@travisvn/edge-tts": "1.0.2"
+    "edge-tts-universal": "1.4.0"
   }
 }
