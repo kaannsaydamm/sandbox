@@ -1,0 +1,11 @@
+{
+  "name": "aluclu-tts-sandbox",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@travisvn/edge-tts": "1.0.3"
+  }
+}
