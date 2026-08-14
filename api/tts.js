@@ -26,6 +26,7 @@ export default async function handler(req, res) {
   const voice = VOICES.has(requestedVoice) ? requestedVoice : 'tr-TR-AhmetNeural';
   const rate = clampNumber(req.query.rate, -35, 35, 0);
   const pitch = clampNumber(req.query.pitch, -25, 25, 0);
+  const encoding = String(req.query.encoding ?? 'binary');
 
   try {
     const tts = new EdgeTTS(text, voice, {
@@ -36,10 +37,17 @@ export default async function handler(req, res) {
     const result = await tts.synthesize();
     const audio = Buffer.from(await result.audio.arrayBuffer());
 
-    res.setHeader('Content-Type', 'audio/mpeg');
-    res.setHeader('Content-Length', String(audio.length));
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('X-ALUCLU-TTS-Voice', voice);
+    res.setHeader('X-ALUCLU-TTS-Bytes', String(audio.length));
+
+    if (encoding === 'base64') {
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      return res.status(200).send(audio.toString('base64'));
+    }
+
+    res.setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('Content-Length', String(audio.length));
     return res.status(200).send(audio);
   } catch (error) {
     console.error('tts failed', error);
