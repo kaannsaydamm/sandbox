@@ -1,0 +1,32 @@
+name: Render Turkish Neural TTS
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tts_manifest.json'
+      - 'scripts/render_tts.mjs'
+      - 'package.json'
+      - '.github/workflows/tts-render.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install
+      - run: node scripts/render_tts.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aluclu-neural-tts
+          path: tts_out/*.mp3
+          if-no-files-found: error
+          retention-days: 1
