@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { EdgeTTS } from '@travisvn/edge-tts';
+import { EdgeTTS } from 'edge-tts-universal';
 
 const manifest = JSON.parse(await fs.readFile('tts_manifest.json', 'utf8'));
 await fs.mkdir('tts_out', { recursive: true });
