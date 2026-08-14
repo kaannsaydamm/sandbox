@@ -1,4 +1,4 @@
-import { EdgeTTS } from '@travisvn/edge-tts';
+import { EdgeTTS } from 'edge-tts-universal';
 
 const VOICES = new Set([
   'tr-TR-AhmetNeural',
