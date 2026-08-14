@@ -5,6 +5,9 @@
   "engines": {
     "node": "22.x"
   },
+  "scripts": {
+    "postinstall": "node scripts/patch_tts_bitrate.mjs"
+  },
   "dependencies": {
     "edge-tts-universal": "1.4.0"
   }
