@@ -42,8 +42,36 @@ export default async function handler(req, res) {
     res.setHeader('X-ALUCLU-TTS-Bytes', String(audio.length));
 
     if (encoding === 'base64') {
+      const b64 = audio.toString('base64');
+      const chunkSize = Math.trunc(clampNumber(req.query.chunk_size, 1000, 180000, 120000));
+      const chunkCount = Math.ceil(b64.length / chunkSize);
+      const requestedChunk = req.query.chunk;
+
+      if (String(req.query.meta ?? '') === '1') {
+        return res.status(200).json({
+          voice,
+          bytes: audio.length,
+          base64_length: b64.length,
+          chunk_size: chunkSize,
+          chunk_count: chunkCount,
+        });
+      }
+
+      if (requestedChunk !== undefined) {
+        const index = Math.trunc(clampNumber(requestedChunk, 0, Math.max(0, chunkCount - 1), 0));
+        return res.status(200).json({
+          voice,
+          bytes: audio.length,
+          base64_length: b64.length,
+          chunk_size: chunkSize,
+          chunk_count: chunkCount,
+          index,
+          data: b64.slice(index * chunkSize, (index + 1) * chunkSize),
+        });
+      }
+
       res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-      return res.status(200).send(audio.toString('base64'));
+      return res.status(200).send(b64);
     }
 
     res.setHeader('Content-Type', 'audio/mpeg');
