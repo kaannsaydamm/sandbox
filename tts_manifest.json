@@ -1,0 +1,16 @@
+[
+  {
+    "id": "narrator_test",
+    "voice": "tr-TR-AhmetNeural",
+    "rate": -5,
+    "pitch": -2,
+    "text": "Bu kayıt, ALUCLU vaka arşivinin yeniden yapılandırılmış ses örneğidir. Bellek ile inanç aynı şey değildir."
+  },
+  {
+    "id": "witness_test",
+    "voice": "tr-TR-EmelNeural",
+    "rate": -3,
+    "pitch": 0,
+    "text": "O gece sistem bana cevap vermedi. Sadece ismimi söyledi ve sonra sustu."
+  }
+]
