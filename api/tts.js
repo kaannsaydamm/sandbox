@@ -1,9 +1,14 @@
+import { readFileSync } from 'node:fs';
 import { EdgeTTS } from 'edge-tts-universal';
 
 const VOICES = new Set([
   'tr-TR-AhmetNeural',
   'tr-TR-EmelNeural',
 ]);
+const MANIFEST = JSON.parse(
+  readFileSync(new URL('../tts_manifest.json', import.meta.url), 'utf8'),
+);
+const SEGMENTS = new Map(MANIFEST.map((segment) => [segment.id, segment]));
 
 function clampNumber(raw, min, max, fallback = 0) {
   const n = Number(raw);
@@ -17,15 +22,16 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'GET only' });
   }
 
-  const text = String(req.query.text ?? '').trim();
+  const segment = SEGMENTS.get(String(req.query.id ?? ''));
+  const text = String(segment?.text ?? req.query.text ?? '').trim();
   if (!text || text.length > 1800) {
     return res.status(400).json({ error: 'text must be 1..1800 characters' });
   }
 
-  const requestedVoice = String(req.query.voice ?? 'tr-TR-AhmetNeural');
+  const requestedVoice = String(segment?.voice ?? req.query.voice ?? 'tr-TR-AhmetNeural');
   const voice = VOICES.has(requestedVoice) ? requestedVoice : 'tr-TR-AhmetNeural';
-  const rate = clampNumber(req.query.rate, -35, 35, 0);
-  const pitch = clampNumber(req.query.pitch, -25, 25, 0);
+  const rate = clampNumber(segment?.rate ?? req.query.rate, -35, 35, 0);
+  const pitch = clampNumber(segment?.pitch ?? req.query.pitch, -25, 25, 0);
   const encoding = String(req.query.encoding ?? 'binary');
 
   try {
@@ -49,6 +55,7 @@ export default async function handler(req, res) {
 
       if (String(req.query.meta ?? '') === '1') {
         return res.status(200).json({
+          id: segment?.id ?? null,
           voice,
           bytes: audio.length,
           base64_length: b64.length,
@@ -60,6 +67,7 @@ export default async function handler(req, res) {
       if (requestedChunk !== undefined) {
         const index = Math.trunc(clampNumber(requestedChunk, 0, Math.max(0, chunkCount - 1), 0));
         return res.status(200).json({
+          id: segment?.id ?? null,
           voice,
           bytes: audio.length,
           base64_length: b64.length,
