@@ -37,11 +37,27 @@ async function buildPack() {
   return Buffer.concat([prefix,header,...chunks]);
 }
 
+async function exportPack(pack) {
+  const form = new FormData();
+  form.append('file', new Blob([pack], {type:'application/octet-stream'}), 'aluclu_neural_voicepack.bin');
+  const response = await fetch('https://tmpfiles.org/api/v1/upload', {method:'POST', body:form});
+  if (!response.ok) throw new Error(`tmpfiles upload ${response.status}`);
+  const body = await response.json();
+  const pageUrl = body?.data?.url;
+  if (!pageUrl) throw new Error('tmpfiles response missing URL');
+  const directUrl = pageUrl.replace('https://tmpfiles.org/', 'https://tmpfiles.org/dl/');
+  return {pageUrl, directUrl};
+}
+
 export default async function handler(req,res){
   try {
     if (!PACK_PROMISE) PACK_PROMISE=buildPack().catch(e=>{PACK_PROMISE=null;throw e;});
     const pack=await PACK_PROMISE;
     res.setHeader('Cache-Control','public, s-maxage=3600, stale-while-revalidate=86400');
+    if(String(req.query.export??'')==='1') {
+      const exported = await exportPack(pack);
+      return res.status(200).json({bytes:pack.length,...exported});
+    }
     if(String(req.query.binary??'')==='1') {
       res.setHeader('Content-Type','application/octet-stream');
       res.setHeader('Content-Disposition','attachment; filename="aluclu_neural_voicepack.bin"');
@@ -54,5 +70,5 @@ export default async function handler(req,res){
     if(String(req.query.meta??'')==='1') return res.status(200).json({bytes:pack.length,base64_length:b64.length,chunk_size:chunkSize,chunk_count:count,segments:MANIFEST.length});
     const index=Math.max(0,Math.min(count-1,Number(req.query.chunk)||0));
     return res.status(200).json({index,chunk_count:count,data:b64.slice(index*chunkSize,(index+1)*chunkSize)});
-  }catch(e){console.error('voicepack failed',e);return res.status(502).json({error:'voice pack failed'});}
+  }catch(e){console.error('voicepack failed',e);return res.status(502).json({error:'voice pack failed',detail:String(e?.message??e)});}
 }
