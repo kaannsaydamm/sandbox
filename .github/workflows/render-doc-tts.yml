@@ -23,15 +23,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: npm
-      - run: npm ci
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
       - name: Render Turkish neural narration
         run: node scripts/render_tts.mjs
+      - name: Pack narration
+        run: zip -j tts_out.zip tts_out/*.mp3
       - name: Commit rendered audio to scratch branch
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -f tts_out/*.mp3
+          git add -f tts_out/*.mp3 tts_out.zip
           git diff --cached --quiet && exit 0
           git commit -m 'build: render documentary neural narration'
           git push origin HEAD:chatgpt/turkiye-israil-video
