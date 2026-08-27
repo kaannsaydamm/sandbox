@@ -1,0 +1,25 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/assets/piper-model.onnx",
+      "destination": "https://huggingface.co/99eren99/piper-turkish-tts/resolve/main/model.onnx"
+    },
+    {
+      "source": "/assets/piper-config.json",
+      "destination": "https://huggingface.co/99eren99/piper-turkish-tts/resolve/main/config.json"
+    },
+    {
+      "source": "/assets/piper-runtime.tar.gz",
+      "destination": "https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_linux_x86_64.tar.gz"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/assets/:path*",
+      "headers": [
+        { "key": "x-vercel-enable-rewrite-caching", "value": "0" }
+      ]
+    }
+  ]
+}
