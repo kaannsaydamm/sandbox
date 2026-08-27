@@ -38,7 +38,17 @@ export const config = { maxDuration: 60 };
 export default async function handler(req,res){
   try {
     const pack=await buildPack();
+    const b64=pack.toString('base64');
+    const chunkSize=Math.max(20000,Math.min(120000,Number(req.query.chunk_size)||120000));
+    const count=Math.ceil(b64.length/chunkSize);
     res.setHeader('Cache-Control','public, s-maxage=3600');
+    if(String(req.query.meta??'')==='1') {
+      return res.status(200).json({bytes:pack.length,base64_length:b64.length,chunk_size:chunkSize,chunk_count:count});
+    }
+    if(req.query.chunk !== undefined) {
+      const index=Math.max(0,Math.min(count-1,Number(req.query.chunk)||0));
+      return res.status(200).json({index,chunk_count:count,data:b64.slice(index*chunkSize,(index+1)*chunkSize)});
+    }
     res.setHeader('Content-Type','application/octet-stream');
     res.setHeader('Content-Disposition','attachment; filename="turkiye_israil_docvoice.bin"');
     res.setHeader('Content-Length',String(pack.length));
