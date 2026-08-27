@@ -1,0 +1,37 @@
+name: Render documentary TTS
+
+on:
+  push:
+    branches:
+      - chatgpt/turkiye-israil-video
+    paths:
+      - 'tts_manifest.json'
+      - 'scripts/render_tts.mjs'
+      - '.github/workflows/render-doc-tts.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  render:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: chatgpt/turkiye-israil-video
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Render Turkish neural narration
+        run: node scripts/render_tts.mjs
+      - name: Commit rendered audio to scratch branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f tts_out/*.mp3
+          git diff --cached --quiet && exit 0
+          git commit -m 'build: render documentary neural narration'
+          git push origin HEAD:chatgpt/turkiye-israil-video
